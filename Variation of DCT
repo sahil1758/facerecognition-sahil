@@ -1,0 +1,118 @@
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
+#include <iostream>
+#include <string>
+#include <stdio.h>
+#include <sstream>
+#include <math.h>
+using namespace cv;
+using namespace std;
+void original();
+int main(){
+
+    char inputo;
+    cout<<"WANNA SEE ORIGINAL IMAGE ALSO THEN CLICK Y"<<endl;
+    cin>>inputo;
+    if(inputo=='Y'){
+        original();
+    }
+    int img_size_1;
+   int img_size_2;
+cout<<"ENTER OUTPUT IMAGE SIZE-ROWS N COLUMN RESPECTIVELY IN FORM OF 42X48 "<<endl;
+cin>>img_size_1;
+cin>>img_size_2;
+char input1;
+cout<<"PRESS Y FOR CONVERT ORIGINAL IMAGE AS LOGARATHMIC IMAGE"<<endl;
+cin>>input1;
+char input2;
+if(input1=='Y'){
+cout<<"PRESS Y for apply anti logarithm on logartmic image"<<endl;
+cin>>input2;
+}
+char c;   //Y or N if you want to use different value of dis
+do{
+
+    int dis;
+    cout<<"ENTER THE VALUE OF COFFICIENT YOU WANT TO DISCARD "<<endl;
+    cin>>dis;
+
+double min, max;
+        stringstream inp_path;		//declare string stream for path of image to be opened
+        inp_path << "C:/Users/sahil PC/Desktop/acuacy of subsets/64.pgm" ;
+		Mat src(168,192 , CV_32FC1);
+        src = imread(inp_path.str().c_str(), 0);		//read image as matrix into src as grayscale image
+
+
+		Size size(img_size_1,img_size_2);
+		resize(src, src, size);		//resizing src
+
+		Mat img(img_size_1,img_size_2, CV_32FC1);
+
+		src.convertTo(img, DataType<float>::type);		//converts resized image to type float for further processing
+
+if(input1=='Y'){
+		for(int i=0;i<img.rows;i++){
+			for(int j=0;j<img.cols;j++){
+				img.at<float>(i,j) = (log(img.at<float>(i,j) +1));		//take the image into logarithmic domain
+			}
+		}
+}
+		dct(img, img);		//apply dct
+
+		for(int i=0;i<=dis;i++){
+			for(int j=0;j<=dis;j++){
+				if(i+j <= dis){
+                img.at<float>(i,j) = 0;		//Remove low frequency components
+				}
+			}
+		}
+		img.at<float>(0,0) = log(100) * 180;		//set DC cocmponent corrosponding to uniform illumination
+
+		dct(img, img, DCT_INVERSE);		//Taking inverse dct of img
+
+
+
+if(input1=='Y'){
+if(input2=='Y'){
+
+		for(int i = 0; i < img.rows; i++){
+			for(int j = 0; j < img.cols; j++){             //inverse of log
+		img.at<float>(i, j) = (exp(img.at<float>(i, j)));
+		}
+		}
+}
+}
+//normalize image
+		minMaxLoc(img, &min, &max);
+		for(int i = 0; i < img.rows; i++){
+			for(int j = 0; j < img.cols; j++){
+				img.at<float>(i, j) -= min;
+				img.at<float>(i, j) /= (max - min);
+			}
+		}
+
+		cout<<"VALUE OF ELIMINATED COFFICIENT IS "<<dis<<endl;
+namedWindow("OUTPUT IMAGE",CV_WINDOW_AUTOSIZE);
+imshow("OUTPUT IMAGE",img);
+waitKey(0);
+
+cout<<"Done"<<endl;
+cout<<"Press Y if you want to see images for different discarding coefficient of DCT"<<endl;
+cin>>c;
+
+}while (c=='Y'||c=='y');
+
+
+
+
+return 0;
+}
+void original(){
+Mat image;
+image=imread("C:/Users/sahil PC/Desktop/acuacy of subsets/64.pgm",0);
+namedWindow("original",CV_WINDOW_AUTOSIZE);
+imshow("original",image);
+waitKey(0);
+}
+
